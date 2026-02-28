@@ -11,8 +11,13 @@ using OpenTelemetry.Trace;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+// content negotiation
+builder.Services.AddControllers(options =>
+{
+    options.ReturnHttpNotAcceptable = true; //this is for handling unacceptable value from Accept header
+})
+.AddXmlSerializerFormatters(); // this is for handling/allowing xml content
 
-builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
