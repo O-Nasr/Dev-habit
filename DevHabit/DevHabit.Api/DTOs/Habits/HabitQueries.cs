@@ -3,7 +3,7 @@ using DevHabit.Api.Entities;
 
 namespace DevHabit.Api.DTOs.Habits;
 
-internal class HabitQueries
+internal static class HabitQueries
 {
     public static Expression<Func<Habit, HabitDto>> ProjectToDto()
     {
