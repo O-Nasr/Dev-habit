@@ -16,6 +16,7 @@ builder.Services.AddControllers(options =>
 {
     options.ReturnHttpNotAcceptable = true; //this is for handling unacceptable value from Accept header
 })
+.AddNewtonsoftJson() // replace default json serializer with newtonsoft
 .AddXmlSerializerFormatters(); // this is for handling/allowing xml content
 
 builder.Services.AddOpenApi();

@@ -1,6 +1,7 @@
 ﻿using DevHabit.Api.Database;
 using DevHabit.Api.DTOs.Habits;
 using DevHabit.Api.Entities;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -72,5 +73,50 @@ public class HabitsController(ApplicationDbContext dbContext) : ControllerBase
         await dbContext.SaveChangesAsync();
         
         return NoContent();  
+    }
+
+    [HttpPatch("{id}")]
+    public async Task<ActionResult> PatchHabit(string id, JsonPatchDocument<HabitDto> patchDocument)
+    {
+        Habit? habit = await dbContext.Habits.FirstOrDefaultAsync(h => h.Id == id);
+        if (habit == null)
+        {
+            return NotFound();
+        }
+
+        HabitDto habitDto = habit.ToDto();
+        
+        // we can do more my manipulate the nested object
+        patchDocument.ApplyTo(habitDto, ModelState);
+
+        if (!TryValidateModel(habitDto))
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        habit.Name = habitDto.Name;
+        habit.Description = habitDto.Description;
+        habit.UpdatedAtUtc = DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync();
+        
+        return NoContent(); 
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteHabit(string id)
+    {
+        Habit habit = await dbContext.Habits.FirstOrDefaultAsync(h => h.Id == id);
+
+        if (habit == null)
+        {
+            return NotFound();
+        }
+        
+        dbContext.Habits.Remove(habit);
+        
+        await dbContext.SaveChangesAsync();
+        
+        return NoContent();
     }
 }
