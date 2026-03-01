@@ -13,10 +13,13 @@ public sealed class HabitConfiguration : IEntityTypeConfiguration<Habit>
         builder.Property(h => h.Name).HasMaxLength(100);
         builder.Property(h => h.Description).HasMaxLength(500);
         builder.OwnsOne(h => h.Frequency);
-        builder.OwnsOne(h => h.Target, targetbuilder =>
+        builder.OwnsOne(h => h.Target, targetBuilder =>
         {
-            targetbuilder.Property(t => t.Unit).HasMaxLength(100);
+            targetBuilder.Property(t => t.Unit).HasMaxLength(100);
         });
         builder.OwnsOne(h => h.Milestone);
+        builder.HasMany(h => h.Tags)
+            .WithMany()
+            .UsingEntity<HabitTag>();
     }
 }
