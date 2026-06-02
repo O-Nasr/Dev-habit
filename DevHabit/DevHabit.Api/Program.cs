@@ -1,5 +1,7 @@
 using DevHabit.Api.Database;
 using DevHabit.Api.Extensions;
+using DevHabit.Api.Middleware;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
@@ -16,8 +18,19 @@ builder.Services.AddControllers(options =>
 {
     options.ReturnHttpNotAcceptable = true; //this is for handling unacceptable value from Accept header
 })
-.AddNewtonsoftJson() // replace default json serializer with newtonsoft
-.AddXmlSerializerFormatters(); // this is for handling/allowing xml content
+.AddNewtonsoftJson() // replace default JSON serializer with newtonsoft
+.AddXmlSerializerFormatters(); // this is for handling/allowing XML content
+
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = context =>
+    {
+        context.ProblemDetails.Extensions.TryAdd("requestId", context.HttpContext.TraceIdentifier);
+    };
+});
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddOpenApi();
 
@@ -56,6 +69,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseExceptionHandler();
 
 app.MapControllers();
 

@@ -18,6 +18,8 @@ public sealed class HabitConfiguration : IEntityTypeConfiguration<Habit>
             targetBuilder.Property(t => t.Unit).HasMaxLength(100);
         });
         builder.OwnsOne(h => h.Milestone);
+        
+        // A skip navigator property
         builder.HasMany(h => h.Tags)
             .WithMany()
             .UsingEntity<HabitTag>();

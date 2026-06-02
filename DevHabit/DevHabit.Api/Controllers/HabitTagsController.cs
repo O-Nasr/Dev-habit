@@ -8,7 +8,7 @@ namespace DevHabit.Api.Controllers;
 
 [ApiController]
 [Route("habits/{habitId}/tags")]
-public class HabitTagsController(ApplicationDbContext dbContext) : ControllerBase
+public sealed class HabitTagsController(ApplicationDbContext dbContext) : ControllerBase
 {
     [HttpPut]
     public async Task<ActionResult> UpsertHabitTag(string habitId, UpsertHabitTagDto upsertHabitTagDto)
@@ -24,7 +24,7 @@ public class HabitTagsController(ApplicationDbContext dbContext) : ControllerBas
         }
         // assume the current tags are [1,2,3,4] and upsert habit tag is [2,3,4,5]
         var currentTags = habit.HabitTags.Select(t => t.TagId).ToHashSet();
-        if (currentTags.SetEquals(upsertHabitTagDto.TagIds))
+        if (currentTags.SetEquals(upsertHabitTagDto.TagIds)) //if are the same do nothing
         {
             return NoContent();
         }
@@ -39,11 +39,12 @@ public class HabitTagsController(ApplicationDbContext dbContext) : ControllerBas
         {
             return BadRequest("One or more tag IDs are invalid.");
         }
-        // here we remove all the tags that are not in the upsert
+        
+        // here we remove all the tags that are not intersected,
         // so the current tag will be [2,3,4]
         habit.HabitTags.RemoveAll(t => !upsertHabitTagDto.TagIds.Contains(t.TagId));
         
-        // here we add all the tags that are not in the current tags
+        // here we add all the tags that are not in the current tags; these tags are not in the intersected list
         // and this tag is [5]
         string[] tagIdsToAdd = upsertHabitTagDto.TagIds.Except(currentTags).ToArray();
         habit.HabitTags.AddRange(tagIdsToAdd.Select(tagId => new HabitTag

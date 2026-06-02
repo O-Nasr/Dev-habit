@@ -96,7 +96,7 @@ internal static class HabitMappings
         // Update milestone if provided
         if (dto.Milestone != null)
         {
-            habit.Milestone ??= new Milestone(); // Create new if doesn't exist
+            habit.Milestone ??= new Milestone(); // Create new if it doesn't exist
             habit.Milestone.Target = dto.Milestone.Target;
             // Note: We don't update Milestone.Current from DTO to preserve progress
         }
