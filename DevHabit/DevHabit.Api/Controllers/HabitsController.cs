@@ -14,10 +14,17 @@ namespace DevHabit.Api.Controllers;
 public sealed class HabitsController(ApplicationDbContext dbContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<HabitsCollectionsDto>> GetHabits()
+    public async Task<ActionResult<HabitsCollectionsDto>> GetHabits([FromQuery] HabitsQueryParameters query)
     {
+        query.Search = query.Search?.Trim().ToLower();
+        
         List<HabitDto> habitDto = await dbContext
             .Habits
+            .Where(h => query.Search == null || 
+                        h.Name.ToLower().Contains(query.Search) ||
+                        h.Description != null && h.Description.ToLower().Contains(query.Search))
+            .Where(h => query.Type == null || h.Type == query.Type)
+            .Where(h => query.Status == null || h.Status == query.Status)
             .Select(HabitQueries.ProjectToDto())
             .ToListAsync();
 
@@ -49,13 +56,8 @@ public sealed class HabitsController(ApplicationDbContext dbContext) : Controlle
     [HttpPost]
     public async Task<ActionResult<HabitDto>> CreateHabit(CreateHabitDto createHabitDto, IValidator<CreateHabitDto> validator)
     {
-        ValidationResult validationResult = await validator.ValidateAsync(createHabitDto);
+        await validator.ValidateAndThrowAsync(createHabitDto);
 
-        if (!validationResult.IsValid)
-        {
-            return BadRequest(validationResult.ToDictionary());
-        }
-        
         Habit habit = createHabitDto.ToEntity();
         
         dbContext.Habits.Add(habit);
