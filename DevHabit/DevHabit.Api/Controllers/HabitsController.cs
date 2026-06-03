@@ -1,4 +1,5 @@
-﻿using DevHabit.Api.Database;
+﻿using DevHabit.Api.Common;
+using DevHabit.Api.Database;
 using DevHabit.Api.DTOs.Habits;
 using DevHabit.Api.Entities;
 using FluentValidation;
@@ -14,27 +15,23 @@ namespace DevHabit.Api.Controllers;
 public sealed class HabitsController(ApplicationDbContext dbContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<HabitsCollectionsDto>> GetHabits([FromQuery] HabitsQueryParameters query)
+    public async Task<ActionResult<PaginationResult<HabitDto>>> GetHabits([FromQuery] HabitsQueryParameters query)
     {
         query.Search = query.Search?.Trim().ToLower();
-        
-        List<HabitDto> habitDto = await dbContext
+
+        IQueryable<HabitDto> habitQuery = dbContext
             .Habits
-            .Where(h => query.Search == null || 
+            .Where(h => query.Search == null ||
                         h.Name.ToLower().Contains(query.Search) ||
                         h.Description != null && h.Description.ToLower().Contains(query.Search))
             .Where(h => query.Type == null || h.Type == query.Type)
             .Where(h => query.Status == null || h.Status == query.Status)
-            .Select(HabitQueries.ProjectToDto())
-            .ToListAsync();
+            .Select(HabitQueries.ProjectToDto());
 
-
-        HabitsCollectionsDto habitsCollectionsDto = new()
-        {
-            Data = habitDto
-        };
+        var paginationResult = await PaginationResult<HabitDto>.CreateAsync(habitQuery, query.Page, query.PageSize);
         
-        return Ok(habitsCollectionsDto);
+        
+        return Ok(paginationResult);
     }
 
     [HttpGet("{id}")]

@@ -9,4 +9,7 @@ public class HabitsQueryParameters
     public string? Search { get; set; }
     public HabitType? Type { get; init; }
     public HabitStatus? Status { get; init; }
+    // public string SearchBy { get; init; }
+    public int Page { get; init; } = 1;
+    public int PageSize { get; init; } = 10;
 }

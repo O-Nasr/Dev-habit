@@ -1,6 +1,13 @@
-﻿namespace DevHabit.Api.DTOs.Habits;
+﻿ //We replace this with the PaginationResult in the common folder
 
-public sealed record HabitsCollectionsDto
+
+/*
+using DevHabit.Api.Common;
+
+namespace DevHabit.Api.DTOs.Habits;
+
+public sealed record HabitsCollectionsDto : ICollectionResponse<HabitDto>
 {
-    public List<HabitDto> Data { get; init; }
+    public List<HabitDto> Items { get; init; }
 }
+*/
